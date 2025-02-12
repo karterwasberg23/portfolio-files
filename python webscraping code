@@ -1,9 +1,6 @@
 '''
 
-Welcome to GDB Online.
-GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
-C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
-Code, Compile, Run and Debug online from anywhere in world.
+Python web scraper
 
 '''
 
@@ -29,7 +26,7 @@ def create_csv_table(filename, data):
     """
     with open(filename, 'w', newline='') as csvfile:
         fieldnames = ['Name', 'Brand', 'Price', 'Availability', 'Reviews']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer = csv.DictWriter(csvfile, delimiter='|', fieldnames=fieldnames)
         
         writer.writeheader()
         writer.writerows(data)
