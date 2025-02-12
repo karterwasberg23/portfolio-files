@@ -1,16 +1,24 @@
 '''
 
-Python code for scraping data off of newegg
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
 '''
 
 
-
+import csv
 from bs4 import BeautifulSoup
 
 import requests
-import csv
 
-def create_csv_table(filename, headers, data):
+
+#import xlwt
+
+#pythonWebScrapingGPUS = Workbook()
+
+def create_csv_table(filename, data):
     """
     Creates a CSV file with the given filename, headers, and data.
 
@@ -20,9 +28,10 @@ def create_csv_table(filename, headers, data):
         data (list of lists): A list of lists, where each inner list represents a row of data.
     """
     with open(filename, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
+        fieldnames = ['Name', 'Brand', 'Price', 'Availability', 'Reviews']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         
-        writer.writerow(headers)
+        writer.writeheader()
         writer.writerows(data)
 
 url = 'https://www.newegg.com/p/pl?N=100007709%20601408874%20601432394%20601408875%20601432392%20601408873%20601432393%20601408877&PageSize=96'
@@ -32,24 +41,6 @@ page = requests.get(url)
 soup = BeautifulSoup(page.text, 'html.parser')
 
 
-
-'''
-
-PriceLabels = soup.find_all('strong')
-
-for PriceLabel in PriceLabels:
-    print(PriceLabel.text)
-
-
-itemTags = soup.find_all('a', class_ = 'item-title')
-
-for itemTag in itemTags:
-    print(itemTag.text)
-    
-'''
-
-
-
 itemObjects = soup.find_all('div', class_='item-cell')
 
 #writing object headers to csv filename
@@ -57,25 +48,35 @@ itemObjects = soup.find_all('div', class_='item-cell')
 filename = 'webscrapingGPUData'
 headers = ['Name', 'Brand', 'Price', 'Availability', 'Reviews']
 
+'''
+writing to excel file
+sheet1 =pythonWebScrapingGPUS.add_sheet('Sheet 1')
 
+sheet1.write(0, 0, 'Name')
+sheet1.write(0, 1, 'Brand')
+sheet1.write(0, 2, 'Price')
+sheet1.write(0, 3, 'Availability')
+sheet1.write(0, 4, 'Reviews')
+'''
 
-
+itemDictionary = [ {'Name': 'NULL', 'Brand': 'NULL', 'Price': 'NULL', 'Availability': 'NULL', 'Reviews': 'NULL'} ]
 
 for itemObject in itemObjects:
     
     try:
-        availability = itemObject.find('p', class_='item-promo').text
+        Availability = itemObject.find('p', class_='item-promo').text
     except:
-        availability = 'IN STOCK'
+        Availability = 'IN STOCK'
         
     try:
         brandImage = itemObject.find('a', class_='item-brand').find('img')
-        brand = brandImage['alt']
+        Brand = brandImage['alt']
     except:
-        brand = 'NULL'
+        Brand = 'NULL'
     
     try:
-        Name = itemObject.find('a', class_='item-title').text
+        Name = ''
+        Name += itemObject.find('a', class_='item-title').text
     except:
         Name = 'NULL'
         
@@ -85,20 +86,34 @@ for itemObject in itemObjects:
         Price = 'NULL'
         
     try:
-        rating = itemObject.find('span', class_='item-rating-num').text
+        Reviews = itemObject.find('span', class_='item-rating-num').text
     except:
-        rating = 'NULL'
-        
-    writeCSVData = [Name, brand, Price, availability, rating]
+        Reviews = 'NULL'
     
-    create_csv_table(filename, headers, writeCSVData)
+
     
-    #finds the value of alt in the brand image logo
+    itemDictionary.append( {'Name': Name, 'Brand': Brand, 'Price': Price, 'Availability': Availability, 'Reviews': Reviews} )
+    
+    
+    '''
+    writing to excel file
+    sheet1.write(rowNum, 0, Name)
+    sheet1.write(rowNum, 1, Brand)
+    sheet1.write(rowNum, 2, Price)
+    sheet1.write(rowNum, 3, Availability)
+    sheet1.write(rowNum, 4, Rating)
+    '''
     print(Name)
-    print(brand)
+    print(Brand)
     print(Price)
-    print(rating)
-    print(availability)
+    print(Availability)
+    print(Reviews)
+
+
+
+create_csv_table(filename, itemDictionary)
+    
+
 
     
     
