@@ -1,0 +1,109 @@
+'''
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+'''
+
+
+
+from bs4 import BeautifulSoup
+
+import requests
+import csv
+
+def create_csv_table(filename, headers, data):
+    """
+    Creates a CSV file with the given filename, headers, and data.
+
+    Args:
+        filename (str): The name of the CSV file to create.
+        headers (list): A list of strings representing the column headers.
+        data (list of lists): A list of lists, where each inner list represents a row of data.
+    """
+    with open(filename, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        
+        writer.writerow(headers)
+        writer.writerows(data)
+
+url = 'https://www.newegg.com/p/pl?N=100007709%20601408874%20601432394%20601408875%20601432392%20601408873%20601432393%20601408877&PageSize=96'
+
+page = requests.get(url)
+
+soup = BeautifulSoup(page.text, 'html.parser')
+
+
+
+'''
+
+PriceLabels = soup.find_all('strong')
+
+for PriceLabel in PriceLabels:
+    print(PriceLabel.text)
+
+
+itemTags = soup.find_all('a', class_ = 'item-title')
+
+for itemTag in itemTags:
+    print(itemTag.text)
+    
+'''
+
+
+
+itemObjects = soup.find_all('div', class_='item-cell')
+
+#writing object headers to csv filename
+
+filename = 'webscrapingGPUData'
+headers = ['Name', 'Brand', 'Price', 'Availability', 'Reviews']
+
+
+
+
+
+for itemObject in itemObjects:
+    
+    try:
+        availability = itemObject.find('p', class_='item-promo').text
+    except:
+        availability = 'IN STOCK'
+        
+    try:
+        brandImage = itemObject.find('a', class_='item-brand').find('img')
+        brand = brandImage['alt']
+    except:
+        brand = 'NULL'
+    
+    try:
+        Name = itemObject.find('a', class_='item-title').text
+    except:
+        Name = 'NULL'
+        
+    try:
+        Price = itemObject.find('li', class_='price-current').find('strong').text
+    except:
+        Price = 'NULL'
+        
+    try:
+        rating = itemObject.find('span', class_='item-rating-num').text
+    except:
+        rating = 'NULL'
+        
+    writeCSVData = [Name, brand, Price, availability, rating]
+    
+    create_csv_table(filename, headers, writeCSVData)
+    
+    #finds the value of alt in the brand image logo
+    print(Name)
+    print(brand)
+    print(Price)
+    print(rating)
+    print(availability)
+
+    
+    
+
