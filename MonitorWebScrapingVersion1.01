@@ -45,8 +45,6 @@ itemDictionary = [ {'Description':'NULL', 'CurrentPrice':'NULL', 'PreviousPrice'
 
 while pageNumber < 2:
     
-    
-    
     try:
         searchPage = requests.get(url1)
     except:
@@ -104,17 +102,32 @@ while pageNumber < 2:
 
         
         #now with the product page URL we will scrape that to get more specific data such as specs of the product 'Brand', 'Model', 'ScreenSize', 'Panel', 'RecommendedResolution', 'AspectRatio', 'ResponseTime'
-        try:
-            productPage = requests.get(URL)
-        except:
-            print('ERROR: Product Page URL COULD NOT BE FOUND')
+        foundProductPage = False
+        
+        foundProductLoop = 0
+        while foundProductLoop < 30:
+            try:
+                productPage = requests.get(URL)
+                productPageSoup = BeautifulSoup(productPage.text, 'html.parser')
+                modelTable = productPageSoup.find('table', class_='table-horizontal').find_next_sibling('table')
+                displayTable = productPageSoup.find('table', class_='table-horizontal').find_next_sibling('table').find_next_sibling('table')
+                foundProductPage = True
+                #print('Found product page: '+URL)
+                invalidURL = 'NULL'
+            except:
+                invalidURL = URL
+                foundProductLoop += 1
+        
+        print('Invalid URL: ')
+        print(invalidURL)
+        print('product looped:' + str(foundProductLoop) + 'times')
+        
 
-        productPageSoup = BeautifulSoup(productPage.text, 'html.parser')
+        
         
         #grabs Brand from product page
         try:
-            Brand = (productPageSoup
-                .find('table', class_='table-horizontal').find_next_sibling('table')
+            Brand = (modelTable
                 .find(lambda tag: tag.name == 'th' and 'Brand' in tag.text).find_next_sibling('td').text)
         except:
             Brand = 'NULL'
