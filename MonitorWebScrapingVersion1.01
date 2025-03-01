@@ -1,3 +1,4 @@
+
 '''
 
 Python web scraper for Newegg for Monitors
@@ -24,7 +25,7 @@ def csv_table_OverWrite(filename, data):
         data (list of lists): A list of lists, where each inner list represents a row of data.
     """
     with open(filename, 'w', newline='') as csvfile:
-        fieldnames = ['Description', 'CurrentPrice', 'PreviousPrice', 'DiscountedAmount', 'Availability', 'Reviews', 'URL', 'Brand']
+        fieldnames = ['Description', 'CurrentPrice', 'PreviousPrice', 'DiscountedAmount', 'Availability', 'Reviews', 'URL', 'Brand', 'Model', 'ScreenSize', 'Panel', 'RecommendedResolution', 'AspectRatio', 'ResponseTime']
         writer = csv.DictWriter(csvfile, delimiter='|', fieldnames=fieldnames)
         
         writer.writeheader()
@@ -38,9 +39,9 @@ pageNumber = 1
 #writing object headers to csv filename
 filename = 'webscrapingGPUData'
 #headers of the html stie
-headers = ['Description', 'CurrentPrice', 'PreviousPrice', 'DiscountedAmount', 'Availability', 'Reviews', 'URL', 'Brand' ]
+headers = ['Description', 'CurrentPrice', 'PreviousPrice', 'DiscountedAmount', 'Availability', 'Reviews', 'URL', 'Brand', 'Model', 'ScreenSize', 'Panel', 'RecommendedResolution', 'AspectRatio', 'ResponseTime' ]
 #establishes the array for
-itemDictionary = [ {'Description':'NULL', 'CurrentPrice':'NULL', 'PreviousPrice':'NULL', 'DiscountedAmount':'NULL', 'Availability':'NULL', 'Reviews':'NULL', 'URL':'NULL', 'Brand':'NULL' } ]
+itemDictionary = [ {'Description':'NULL', 'CurrentPrice':'NULL', 'PreviousPrice':'NULL', 'DiscountedAmount':'NULL', 'Availability':'NULL', 'Reviews':'NULL', 'URL':'NULL', 'Brand':'NULL', 'Model':'NULL', 'ScreenSize':'NULL', 'Panel':'NULL', 'RecommendedResolution':'NULL', 'AspectRatio':'NULL', 'ResponseTime':'NULL' } ]
 
 while pageNumber < 2:
     
@@ -102,7 +103,7 @@ while pageNumber < 2:
             URL = 'NULL'
 
         
-        #now with the product page URL we will scrape that to get more specific data such as specs of the product 'Brand', 'Model', 'ScreenSize', 'Panel'
+        #now with the product page URL we will scrape that to get more specific data such as specs of the product 'Brand', 'Model', 'ScreenSize', 'Panel', 'RecommendedResolution', 'AspectRatio', 'ResponseTime'
         try:
             productPage = requests.get(URL)
         except:
@@ -110,13 +111,63 @@ while pageNumber < 2:
 
         productPageSoup = BeautifulSoup(productPage.text, 'html.parser')
         
-        #grabs Brand
+        #grabs Brand from product page
         try:
-            Brand = productPageSoup.find('div', class_='table-horizontal').find('th', 'Brand').text
+            Brand = (productPageSoup
+                .find('table', class_='table-horizontal').find_next_sibling('table')
+                .find(lambda tag: tag.name == 'th' and 'Brand' in tag.text).find_next_sibling('td').text)
         except:
             Brand = 'NULL'
             
-        itemDictionary.append( {'Description': Description, 'CurrentPrice': CurrentPrice, 'PreviousPrice': PreviousPrice, 'DiscountedAmount':DiscountedAmount, 'Availability': Availability, 'Reviews': Reviews, 'URL':URL, 'Brand':Brand } )
+        #grabs Model from product page
+        try:
+            Model = (productPageSoup
+                .find('table', class_='table-horizontal').find_next_sibling('table')
+                .find(lambda tag: tag.name == 'th' and 'Model' in tag.text).find_next_sibling('td').text)
+        except:
+            Model = 'NULL'
+            
+        #grabs ScreenSize from product page
+        try:
+            ScreenSize = (productPageSoup
+                .find('table', class_='table-horizontal').find_next_sibling('table').find_next_sibling('table')
+                .find(lambda tag: tag.name == 'th' and 'Screen Size' in tag.text).find_next_sibling('td').text)
+        except:
+            ScreenSize = 'NULL'
+        
+        #grabs Panel from product page
+        try:
+            Panel = (productPageSoup
+                .find('table', class_='table-horizontal').find_next_sibling('table').find_next_sibling('table')
+                .find(lambda tag: tag.name == 'th' and 'Panel' in tag.text).find_next_sibling('td').text)
+        except:
+            Panel = 'NULL'
+            
+        #grabs RecommendedResolution from product page
+        try:
+            RecommendedResolution = (productPageSoup
+                .find('table', class_='table-horizontal').find_next_sibling('table').find_next_sibling('table')
+                .find(lambda tag: tag.name == 'th' and 'Recommended Resolution' in tag.text).find_next_sibling('td').text)
+        except:
+            RecommendedResolution = 'NULL'
+            
+        #grabs AspectRatio from product page
+        try:
+            AspectRatio = (productPageSoup
+                .find('table', class_='table-horizontal').find_next_sibling('table').find_next_sibling('table')
+                .find(lambda tag: tag.name == 'th' and 'Aspect Ratio' in tag.text).find_next_sibling('td').text)
+        except:
+            AspectRatio = 'NULL'
+        
+        #grabs ResponseTime from product page
+        try:
+            ResponseTime = (productPageSoup
+                .find('table', class_='table-horizontal').find_next_sibling('table').find_next_sibling('table')
+                .find(lambda tag: tag.name == 'th' and 'Response Time' in tag.text).find_next_sibling('td').text)
+        except:
+            ResponseTime = 'NULL'
+        
+        itemDictionary.append( {'Description': Description, 'CurrentPrice': CurrentPrice, 'PreviousPrice': PreviousPrice, 'DiscountedAmount':DiscountedAmount, 'Availability': Availability, 'Reviews': Reviews, 'URL':URL, 'Brand':Brand, 'Model':Model, 'ScreenSize':ScreenSize, 'Panel':Panel, 'RecommendedResolution':RecommendedResolution, 'AspectRatio':AspectRatio, 'ResponseTime':ResponseTime } )
     
     print(pageNumber)
     
