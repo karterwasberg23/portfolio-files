@@ -1,0 +1,31 @@
+
+
+#test scraper for single website page
+
+import requests
+from bs4 import BeautifulSoup
+
+URL = 'https://www.newegg.com/asus-vg27aqa1a-27-wqhd-170-hz-va-black/p/N82E16824281243'
+
+try:
+    productPage = requests.get(URL)
+except:
+    print('ERROR: Product Page URL COULD NOT BE FOUND')
+
+productPageSoup = BeautifulSoup(productPage.text, 'html.parser')
+        
+#grabs item we are looking for
+try:
+    websiteElement = (productPageSoup
+    .find('table', class_='table-horizontal').find_next_sibling('table')
+    .find(lambda tag: tag.name == 'th' and 'Model' in tag.text).find_next_sibling('td').text
+    
+    )
+except:
+    websiteElement = 'NULL'
+    
+    
+print(websiteElement)
+    
+    
+#end of page    
