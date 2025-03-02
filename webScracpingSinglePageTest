@@ -1,32 +1,42 @@
 
 
 
+
 #test scraper for single website page
 
 import requests
 from bs4 import BeautifulSoup
 
-URL = 'https://www.newegg.com/gigabyte-mo34wqc-34-wqhd-175-hz-oled-black/p/N82E16824012086'
+import time
+
+URL = 'https://www.newegg.com/p/N82E16824011512'
 
 loopNumber = 0
 
 while loopNumber < 15:
     grabProductPage = False
-    
+    websiteElement = 'NULL'
+    grabProductLoop = 0
     while grabProductPage==False:
+        
         
         productPage = requests.get(URL)
         productPageSoup = BeautifulSoup(productPage.text, 'html.parser')
-        if len(productPageSoup)==2:
+        time.sleep(1)
+        productTabPanes = productPageSoup.find('div', class_='tab-panes')
+        if productTabPanes!=None:
             #print(productPageSoup)
             #print(len(productPageSoup))
-            websiteElement = (productPageSoup
-                .find('div', class_='tab-panes')
+            websiteElement = (productTabPanes
                 .find(lambda tag: tag.name == 'th' and 'Model' in tag.text).find_next_sibling('td').text )
+            print('div element found')
             grabProductPage = True
             #print('loop Exit')
         else:
-            print('Failed to grab product page')
+            time.sleep(2)
+            grabProductLoop+=1
+            print('Invalid Url: Trial#: ' + str(grabProductLoop) + ' reattempting request')
+            
         
             
             #print(URL)
