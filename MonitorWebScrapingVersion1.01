@@ -48,13 +48,15 @@ while pageNumber < 2:
     grabProducts = False
     while grabProducts==False:
         searchPage = requests.get(url1)
-        searchPageSoup = BeautifulSoup(searchPage.text, 'html.parser')
+        searchPageSoup = BeautifulSoup(searchPage.content, 'html.parser')
         itemObjects = searchPageSoup.find_all('div', class_='item-cell')
         
         if len(itemObjects)>1:
+            print('successful request made...')
             grabProducts = True
         else:
-            print('ERROR: URL COULD NOT BE FOUND')
+            time.sleep(5)
+            print('ERROR: URL COULD NOT BE FOUND.... attempting new request...')
 
     
     
@@ -113,16 +115,17 @@ while pageNumber < 2:
         foundProductLoop = 0
         while foundProductPage==False:
             productPage = requests.get(URL)
-            productPageSoup = BeautifulSoup(productPage.text, 'html.parser')
+            productPageSoup = BeautifulSoup(productPage.content, 'html.parser')
             productSpecsTable = productPageSoup.find('div', class_='tab-panes')
             if productSpecsTable!=None:
                 foundProductPage = True
-                print('Found product page: '+URL)
+                #print('Found product page: '+URL)
                 invalidURL = 'NULL'
             else:
                 invalidURL = URL
-                print('Invalid Url: Trial#: ' + str(foundProductLoop) + 'URL: ' + invalidURL)
+                print('Invalid Url: Trial#: ' + str(foundProductLoop) + ' URL: ' + invalidURL + ' reattempting request')
                 foundProductLoop += 1
+                time.sleep(5)
         
         #print('product looped:' + str(foundProductLoop) + 'times')
         
