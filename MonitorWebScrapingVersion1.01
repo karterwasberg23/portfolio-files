@@ -5,7 +5,7 @@ Python web scraper for Newegg for Monitors
 
 '''
 
-
+import time
 import csv
 import requests
 from bs4 import BeautifulSoup
@@ -45,16 +45,21 @@ itemDictionary = [ {'Description':'NULL', 'CurrentPrice':'NULL', 'PreviousPrice'
 
 while pageNumber < 2:
     
-    try:
-        searchPage = requests.get(url1)
-    except:
-        print('ERROR: URL COULD NOT BE FOUND')
+    grabProducts = False
+    while grabProducts==False:
+        try:
+            searchPage = requests.get(url1)
+            searchPageSoup = BeautifulSoup(searchPage.text, 'html.parser')
+            itemObjects = searchPageSoup.find_all('div', class_='item-cell')
+            grabProducts = True
+        except:
+            print('ERROR: URL COULD NOT BE FOUND')
 
-    searchPageSoup = BeautifulSoup(searchPage.text, 'html.parser')
-    itemObjects = searchPageSoup.find_all('div', class_='item-cell')
+    
     
     print(url1)
-
+    
+    itemNumber = 0
     for itemObject in itemObjects:
         
         #checks the product description
@@ -105,83 +110,75 @@ while pageNumber < 2:
         foundProductPage = False
         
         foundProductLoop = 0
-        while foundProductLoop < 30:
+        while foundProductPage<10:
             try:
                 productPage = requests.get(URL)
                 productPageSoup = BeautifulSoup(productPage.text, 'html.parser')
-                modelTable = productPageSoup.find('table', class_='table-horizontal').find_next_sibling('table')
-                displayTable = productPageSoup.find('table', class_='table-horizontal').find_next_sibling('table').find_next_sibling('table')
+                tabPanesDiv = productPageSoup.find('div', class_='tab-panes')
                 foundProductPage = True
                 #print('Found product page: '+URL)
                 invalidURL = 'NULL'
             except:
                 invalidURL = URL
+                print('Invalid Url' + invalidURL)
                 foundProductLoop += 1
         
-        print('Invalid URL: ')
-        print(invalidURL)
-        print('product looped:' + str(foundProductLoop) + 'times')
-        
-
-        
+        #print('product looped:' + str(foundProductLoop) + 'times')
         
         #grabs Brand from product page
         try:
-            Brand = (modelTable
+            Brand = (tabPanesDiv
                 .find(lambda tag: tag.name == 'th' and 'Brand' in tag.text).find_next_sibling('td').text)
         except:
             Brand = 'NULL'
             
         #grabs Model from product page
         try:
-            Model = (productPageSoup
-                .find('table', class_='table-horizontal').find_next_sibling('table')
+            Model = (tabPanesDiv
                 .find(lambda tag: tag.name == 'th' and 'Model' in tag.text).find_next_sibling('td').text)
         except:
             Model = 'NULL'
             
         #grabs ScreenSize from product page
         try:
-            ScreenSize = (productPageSoup
-                .find('table', class_='table-horizontal').find_next_sibling('table').find_next_sibling('table')
+            ScreenSize = (tabPanesDiv
                 .find(lambda tag: tag.name == 'th' and 'Screen Size' in tag.text).find_next_sibling('td').text)
         except:
             ScreenSize = 'NULL'
         
         #grabs Panel from product page
         try:
-            Panel = (productPageSoup
-                .find('table', class_='table-horizontal').find_next_sibling('table').find_next_sibling('table')
+            Panel = (tabPanesDiv
                 .find(lambda tag: tag.name == 'th' and 'Panel' in tag.text).find_next_sibling('td').text)
         except:
             Panel = 'NULL'
             
         #grabs RecommendedResolution from product page
         try:
-            RecommendedResolution = (productPageSoup
-                .find('table', class_='table-horizontal').find_next_sibling('table').find_next_sibling('table')
+            RecommendedResolution = (tabPanesDiv
                 .find(lambda tag: tag.name == 'th' and 'Recommended Resolution' in tag.text).find_next_sibling('td').text)
         except:
             RecommendedResolution = 'NULL'
             
         #grabs AspectRatio from product page
         try:
-            AspectRatio = (productPageSoup
-                .find('table', class_='table-horizontal').find_next_sibling('table').find_next_sibling('table')
+            AspectRatio = (tabPanesDiv
                 .find(lambda tag: tag.name == 'th' and 'Aspect Ratio' in tag.text).find_next_sibling('td').text)
         except:
             AspectRatio = 'NULL'
         
         #grabs ResponseTime from product page
         try:
-            ResponseTime = (productPageSoup
-                .find('table', class_='table-horizontal').find_next_sibling('table').find_next_sibling('table')
+            ResponseTime = (tabPanesDiv
                 .find(lambda tag: tag.name == 'th' and 'Response Time' in tag.text).find_next_sibling('td').text)
         except:
             ResponseTime = 'NULL'
         
         itemDictionary.append( {'Description': Description, 'CurrentPrice': CurrentPrice, 'PreviousPrice': PreviousPrice, 'DiscountedAmount':DiscountedAmount, 'Availability': Availability, 'Reviews': Reviews, 'URL':URL, 'Brand':Brand, 'Model':Model, 'ScreenSize':ScreenSize, 'Panel':Panel, 'RecommendedResolution':RecommendedResolution, 'AspectRatio':AspectRatio, 'ResponseTime':ResponseTime } )
-    
+        
+        #print('success item scrape on Page: ' + str(pageNumber) + ' Item: ' + str(itemNumber) )
+        itemNumber+=1
+        
     print(pageNumber)
     
     #changes url to get the next page
