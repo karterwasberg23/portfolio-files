@@ -1,31 +1,43 @@
 
 
+
 #test scraper for single website page
 
 import requests
 from bs4 import BeautifulSoup
 
-URL = 'https://www.newegg.com/asus-vg27aqa1a-27-wqhd-170-hz-va-black/p/N82E16824281243'
+URL = 'https://www.newegg.com/gigabyte-mo34wqc-34-wqhd-175-hz-oled-black/p/N82E16824012086'
 
-try:
-    productPage = requests.get(URL)
-except:
-    print('ERROR: Product Page URL COULD NOT BE FOUND')
+loopNumber = 0
 
-productPageSoup = BeautifulSoup(productPage.text, 'html.parser')
+while loopNumber < 15:
+    grabProductPage = False
+    
+    while grabProductPage==False:
         
-#grabs item we are looking for
-try:
-    websiteElement = (productPageSoup
-    .find('table', class_='table-horizontal').find_next_sibling('table')
-    .find(lambda tag: tag.name == 'th' and 'Model' in tag.text).find_next_sibling('td').text
+        productPage = requests.get(URL)
+        productPageSoup = BeautifulSoup(productPage.text, 'html.parser')
+        if len(productPageSoup)==2:
+            #print(productPageSoup)
+            #print(len(productPageSoup))
+            websiteElement = (productPageSoup
+                .find('div', class_='tab-panes')
+                .find(lambda tag: tag.name == 'th' and 'Model' in tag.text).find_next_sibling('td').text )
+            grabProductPage = True
+            #print('loop Exit')
+        else:
+            print('Failed to grab product page')
+        
+            
+            #print(URL)
+        
+        
+    #print(grabProductPage)
+                
+    #print(grabSite)
+    print(websiteElement)   
     
-    )
-except:
-    websiteElement = 'NULL'
-    
-    
-print(websiteElement)
-    
+        
+    loopNumber+=1
     
 #end of page    
