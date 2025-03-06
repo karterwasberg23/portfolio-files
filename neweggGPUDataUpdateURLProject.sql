@@ -83,14 +83,14 @@ where [Video Card Name] is not null and Availability not like 'out of stock'
 
 select * from #joinedBenchmarkProduct order by gpu_descr, gpu_name;
 /*we select from the join query and find it gives us extra results that we don't need, this is because some graphics cards have the same name but then extra editions at the end such as below
-Used - Very Good GIGABYTE GeForce GTX 1050 OC Low Profile 2GB Video Card, GBTGV-N1050OC-2GL												GeForce GTX 1050
-Used - Very Good GIGABYTE GeForce GTX 1050 Ti 4GB GDDR5 PCI Express 3.0 x16 ATX Video Card GV-N105TWF2OC-4GD							GeForce GTX 1050
-Used - Very Good GIGABYTE GeForce GTX 1050 Ti 4GB GDDR5 PCI Express 3.0 x16 Low Profile Video Card GV-N105TOC-4GL						GeForce GTX 1050
-Used - Very Good MSI GeForce GTX 1050 2GB GDDR5 PCI Express 3.0 x16 ATX Video Card GTX 1050 2G OC										GeForce GTX 1050
+Used - Very Good GIGABYTE GeForce GTX 1050 OC Low Profile 2GB Video Card, GBTGV-N1050OC-2GL												                    GeForce GTX 1050
+Used - Very Good GIGABYTE GeForce GTX 1050 Ti 4GB GDDR5 PCI Express 3.0 x16 ATX Video Card GV-N105TWF2OC-4GD							            GeForce GTX 1050
+Used - Very Good GIGABYTE GeForce GTX 1050 Ti 4GB GDDR5 PCI Express 3.0 x16 Low Profile Video Card GV-N105TOC-4GL						          GeForce GTX 1050
+Used - Very Good MSI GeForce GTX 1050 2GB GDDR5 PCI Express 3.0 x16 ATX Video Card GTX 1050 2G OC										                  GeForce GTX 1050
 Yeston GeForce GTX 1050 Ti 4GB GDDR5 Graphics cards pci express x16 3.0 video cards Desktop computer PC video gaming graphics card		GeForce GTX 1050
-Yeston GeForce GTX 1050 Ti 4GB GDDR5 LP Graphics cards pci express 3.0 video cards Desktop computer PC video gaming graphics card		GeForce GTX 1050
-ASUS Cerberus GeForce GTX 1050 Ti 4GB OC Edition GDDR5 Gaming Graphics Card, CERBERUS-GTX1050TI-O4G										GeForce GTX 1050 Ti
-GIGABYTE GeForce GTX 1050 Ti 4GB GDDR5 PCI Express 3.0 x16 ATX Video Cards GV-N105TD5-4GD												GeForce GTX 1050 Ti
+Yeston GeForce GTX 1050 Ti 4GB GDDR5 LP Graphics cards pci express 3.0 video cards Desktop computer PC video gaming graphics card		  GeForce GTX 1050
+ASUS Cerberus GeForce GTX 1050 Ti 4GB OC Edition GDDR5 Gaming Graphics Card, CERBERUS-GTX1050TI-O4G										                GeForce GTX 1050 Ti
+GIGABYTE GeForce GTX 1050 Ti 4GB GDDR5 PCI Express 3.0 x16 ATX Video Cards GV-N105TD5-4GD												                      GeForce GTX 1050 Ti
 
 as you can see the table joined gtx 1050 benchmarks on product results that were 1050 TI, but we can filter these out from the joined query
 
