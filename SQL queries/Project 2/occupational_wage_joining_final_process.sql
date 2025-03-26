@@ -6,7 +6,8 @@
 /*the occ_code is how we can organize and categorize our data, but unforunately over the past years of data the occ_codes have changed and are missing for several titles in our dataset*/
 /*we lost some occ_codes when appending the data, but it doesn't matter anyway because there is some older datasets from years between 2000-2011 that need to be converted to new occ_codes anyway */
 /*we need to get the new occ_code for each occ_title so that we can easily categorize our data */
-/*we can take a look at the US bureau of labor statistics website and we find their list of job titles with the new occ_codes, those are the ones we want https://www.bls.gov/oes/current/oes_stru.htm */
+/*we can take a look at the US bureau of labor statistics website and we find their list of job titles with the new occ_codes, 
+those are the ones we want https://www.bls.gov/oes/current/oes_stru.htm */
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /*we copy and paste all occupations into excel and import into SQL so now we have the occ_code and the occupation, 
@@ -24,7 +25,8 @@ when substring(occ_code_id, 4, 4) like '0000' then 1
 end as occ_job_category_level, dense_rank() over (partition by occ_job_title order by occ_job_title, occ_code_id desc) as duplicate_rank
 from occ_codes$ ) get_occ_codes
 where duplicate_rank = 1 ;
-/*now we have 1,166 distinct job occupations with their own unique occ_code*/ select distinct occ_job_title from #leveled_occupations; select * from #leveled_occupations order by occ_job_title, occ_job_category_level;
+/*now we have 1,166 distinct job occupations with their own unique occ_code*/ 
+select distinct occ_job_title from #leveled_occupations; select * from #leveled_occupations order by occ_job_title, occ_job_category_level;
 --____________________________________________________________________________________________________________________________________________________________________________________________
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -50,7 +52,8 @@ WITH distinct_occupation_titles AS (
     CROSS APPLY STRING_SPLIT(removed_string_occ_title, ' ')
 ),
 leveled_occupation_titles AS (
-    SELECT occ_code_id, removed_string_occ_job_title, len(removed_string_occ_job_title) - len(REPLACE(removed_string_occ_job_title, ' ', '')) + 1 AS occ_job_title_word_count, occ_job_category_level, value AS word from 
+    SELECT occ_code_id, removed_string_occ_job_title, len(removed_string_occ_job_title) - len(REPLACE(removed_string_occ_job_title, ' ', '')) + 1 AS occ_job_title_word_count, 
+	occ_job_category_level, value AS word from 
 
 (select replace(occ_job_title, ',', '') as  removed_string_occ_job_title, occ_code_id, occ_job_category_level from #leveled_occupations) removed_string_junctions
 
@@ -98,11 +101,6 @@ order by occ_title;
 --____________________________________________________________________________________________________________________________________________________________________________________________
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-/*check to see how much data we still don't have occ_codes for */
-select * from occ_data_final where occ_title_id not in (select occ_title_id from #perfect_match_occ_title_codes)  and year > 1999;
---____________________________________________________________________________________________________________________________________________________________________________________________
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 create table #other_joined_occ_title_codes (occ_title_id int, occ_code_id varchar(7), occ_title varchar(250), occ_job_title varchar(250) );
 --			drop table #other_joined_occ_title_codes
 insert into #other_joined_occ_title_codes
@@ -112,22 +110,12 @@ select *, abs(word_match_count - occ_job_title_word_count) as word_count_diff, c
 dense_rank() over (partition by occ_title order by word_rank, occ_job_category_level) as category_rank
 from #joined_occ_codes where
  trim(matched_words) not like 'and' 
- and trim(matched_words) not like 'all other' 
- and trim(matched_words) not like 'all and other'
- and trim(matched_words) not like 'and other' 
- and trim(matched_words) not like 'other'
- and trim(matched_words) not like 'and other workers'
- and trim(matched_words) not like 'all other workers'
- and trim(matched_words) not like 'and related workers'
- and trim(matched_words) not like 'all and other workers'
- and trim(matched_words) not like 'all and other related workers'
+ and trim(matched_words) not like 'all other' and trim(matched_words) not like 'all and other'
+ and trim(matched_words) not like 'and other' and trim(matched_words) not like 'other' and trim(matched_words) not like 'and other workers' and trim(matched_words) not like 'all other workers'
+ and trim(matched_words) not like 'and related workers' and trim(matched_words) not like 'all and other workers' and trim(matched_words) not like 'all and other related workers'
  and trim(matched_words) not like 'and engineers'
- and occ_title not like '%supervisor%'
- and occ_job_title not like '%supervisor%'
- and occ_title not like '%all other%'
- and occ_job_title not like '%except%'
- and occ_job_title not like '%manager%'
- and occ_title not like '%manager%'
+ and occ_title not like '%supervisor%' and occ_job_title not like '%supervisor%'
+ and occ_title not like '%all other%' and occ_job_title not like '%except%' and occ_job_title not like '%manager%' and occ_title not like '%manager%'
  and occ_title not in (select occ_title from #perfect_match_occ_title_codes )
  and word_match_count > 1
  and word_rank = 1 ) rankInitial
@@ -138,26 +126,19 @@ from #joined_occ_codes where
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* we will execute this query and then export to excel to manually assign correct job codes for these and then import back as table */
-select *, abs(word_match_count - occ_job_title_word_count) as word_count_diff, count(occ_title) over (partition by occ_title ) as tie_matches ,
+select occ_title_id, 'codes' + occ_code_id as occ_code_id /*had to put codes in because excel kept automatically convert some to date*/, occ_title, occ_job_title, word_match_count, matched_words, occ_job_category_level, occ_title_word_count, occ_job_title_word_count, word_rank, abs(word_match_count - occ_job_title_word_count) as word_count_diff, count(occ_title) over (partition by occ_title ) as tie_matches ,
 dense_rank() over (partition by occ_title order by word_rank, occ_job_category_level) as category_rank
 from #joined_occ_codes where
  trim(matched_words) not like 'and' 
- and trim(matched_words) not like 'all other' 
- and trim(matched_words) not like 'all and other'
- and trim(matched_words) not like 'and other' 
- and trim(matched_words) not like 'other'
- and trim(matched_words) not like 'and other workers'
- and trim(matched_words) not like 'all other workers'
- and trim(matched_words) not like 'and related workers'
- and trim(matched_words) not like 'all and other workers'
- and trim(matched_words) not like 'all and other related workers'
+ and trim(matched_words) not like 'all other'  and trim(matched_words) not like 'all and other'
+ and trim(matched_words) not like 'and other'  and trim(matched_words) not like 'other' and trim(matched_words) not like 'and other workers'
+ and trim(matched_words) not like 'all other workers' and trim(matched_words) not like 'and related workers' 
+ and trim(matched_words) not like 'all and other workers' and trim(matched_words) not like 'all and other related workers'
  and occ_title not in (select occ_title from #perfect_match_occ_title_codes ) and occ_title not in (select occ_title from #other_joined_occ_title_codes )
  and word_match_count > 1
  and word_rank =  1
  order by tie_matches, occ_title, word_rank, word_count_diff, occ_job_category_level;
  --____________________________________________________________________________________________________________________________________________________________________________________________
-
-select * from final_other_joined_occ_title_codes;
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /*check to see how much data we still don't have occ_codes for */
@@ -165,6 +146,8 @@ select * from occ_data_final where occ_title_id not in (select occ_title_id from
 and occ_title_id not in (select occ_title_id from final_other_joined_occ_title_codes) and year > 1999; /*now only 463 rows so we just won't use those in our dataset final*/
 --____________________________________________________________________________________________________________________________________________________________________________________________
 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 /*let's union all our occ_code titles */
 create table #unioned_occ_title_codes (occ_title_id int,  occ_code_id varchar(250), occ_title varchar(250), occ_job_title varchar(250) );
 --		drop table #unioned_occ_title_codes
@@ -174,31 +157,22 @@ select * from #perfect_match_occ_title_codes union all select * from #other_join
 
 --check rows that have those names
 select * from occ_data_final where occ_title_id in (select occ_title_id from #unioned_occ_title_codes) and year > 1999;--25,497
+--____________________________________________________________________________________________________________________________________________________________________________________________
 
-
-
-select occ_title_id, occ_code, joined_codes.occ_job_title, h_mean, a_mean, year, lvl1codes.occ_job_title, lvl2codes.occ_job_title as occ_category1 from 
-( select d.occ_title_id, otc.occ_code_id as occ_code, otc.occ_job_title, h_mean, a_mean, year
-from occ_data_final d inner join #unioned_occ_title_codes otc on d.occ_title_id = otc.occ_title_id where year > 1999  --25,497
-) joined_codes
-
-left join (select * from #leveled_occupations where occ_job_category_level = 1) lvl1codes on substring(joined_codes.occ_code, 1, 2) = substring(lvl1codes.occ_code_id, 1, 2)
-
-left join (select * from #leveled_occupations where occ_job_category_level = 2) lvl2codes on substring(joined_codes.occ_code, 1, 4) = substring(lvl2codes.occ_code_id, 1, 4);
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-/*joining categories on final data set*/
+/*assinging our categories for use in tableau dashboard*/
 
+select occ_title_id, occ_code, occ_job_title, h_mean, a_mean, year, job_category1, case when job_category3 is null then occ_job_title else job_category3 end as job_category3 from (
 
-select occ_title_id, occ_code, fdsj.occ_job_title, h_mean, a_mean, year, lvl1codes.occ_job_title as job_category1, lvl2codes.occ_job_title as job_category2 from final_data_set_join fdsj
+select occ_title_id, occ_code, fdsj.occ_job_title, h_mean, a_mean, year, lvl1codes.occ_job_title as job_category1, lvl3codes.occ_job_title as job_category3 from final_data_set_join fdsj
 
 left join ( select distinct * from occ_codes$ where substring(occ_code_id, 4, 4) like '0000' ) lvl1codes on substring(occ_code, 6, 2) = substring(lvl1codes.occ_code_id, 1, 2)
 
-left join ( select distinct * from occ_codes$ where substring(occ_code_id, 6, 2) like '00' and substring(occ_code_id, 4, 1) not like '0' ) lvl2codes on substring(occ_code, 6, 4) = substring(lvl2codes.occ_code_id, 1, 4)
+left join ( select distinct * from occ_codes$ where substring(occ_code_id, 7, 1) like '0' and substring(occ_code_id, 6, 1) not like '0' ) lvl3codes on substring(occ_code, 6, 6) = substring(lvl3codes.occ_code_id, 1, 6)
+) assign_category_query
 
-
-/*this table is what we will import into excel*/
 --____________________________________________________________________________________________________________________________________________________________________________________________
 
 
